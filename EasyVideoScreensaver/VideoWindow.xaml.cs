@@ -1,63 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using LibVLCSharp.Shared;
 
 namespace EasyVideoScreensaver
 {
-    /// <summary>
-    /// Interaction logic for BlackoutWindow.xaml
-    /// </summary>
     public partial class VideoWindow : Window
     {
-        private MySettings settings = ((App)Application.Current).settings;
-        private string settingsFilename = ((App)Application.Current).settingsFilename;
-        private MediaElement mediaElement;
+        private readonly MySettings settings = ((App)Application.Current).settings;
+        private readonly string settingsFilename = ((App)Application.Current).settingsFilename;
+        private readonly MediaPlayer mediaPlayer;
 
-        public VideoWindow(MediaElement media)
+        public VideoWindow(MediaPlayer player)
         {
             InitializeComponent();
-            VisualBrush brush = new VisualBrush();
-            mediaElement = media;
-            brush.Visual = mediaElement;
-            Display.Fill = brush;
+            mediaPlayer = player;
+            VideoView.MediaPlayer = player;
+            ApplyVideoViewLayout();
+            Loaded += VideoWindow_Loaded;
+        }
+
+        public UIElement Display => VideoView;
+
+        private void ApplyVideoViewLayout()
+        {
+            if (settings.StretchMode == "Center")
+            {
+                VideoView.HorizontalAlignment = HorizontalAlignment.Center;
+                VideoView.VerticalAlignment = VerticalAlignment.Center;
+            }
+            else
+            {
+                VideoView.HorizontalAlignment = HorizontalAlignment.Stretch;
+                VideoView.VerticalAlignment = VerticalAlignment.Stretch;
+            }
+        }
+
+        private void VideoWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateStretch();
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateStretch();
+        }
+
+        private void UpdateStretch()
+        {
+            if (mediaPlayer == null)
+                return;
+
+            VlcPlayback.ApplyStretchToWindow(
+                mediaPlayer,
+                settings.StretchMode,
+                (int)ActualWidth,
+                (int)ActualHeight);
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            //Close screensaver when key is pressed
             e.Handled = true;
             CloseScreensaver();
         }
 
         private void Window_MouseDown(object sender, MouseEventArgs e)
         {
-            //Close screensaver when mouse is moved
             e.Handled = true;
             CloseScreensaver();
         }
 
         private void CloseScreensaver()
         {
-            //Save resume position
             if (settings.Resume)
             {
-                settings.ResumePosition = mediaElement.Position.TotalSeconds;
+                settings.ResumePosition = VlcPlayback.GetPositionSeconds(mediaPlayer);
                 settings.Save(settingsFilename);
             }
 
-            //Close screensaver
             Application.Current.Shutdown();
         }
-
     }
 }
