@@ -21,7 +21,6 @@ namespace EasyVideoScreensaver
         {
             InitializeComponent();
             mediaPlayer = player;
-            ApplyVideoViewLayout();
             VideoView.MediaPlayer = mediaPlayer;
             Loaded += VideoWindow_Loaded;
         }
@@ -31,20 +30,6 @@ namespace EasyVideoScreensaver
         public void EnsurePlaybackStarted()
         {
             TryStartPlayback();
-        }
-
-        private void ApplyVideoViewLayout()
-        {
-            if (settings.StretchMode == "Center")
-            {
-                VideoView.HorizontalAlignment = HorizontalAlignment.Center;
-                VideoView.VerticalAlignment = VerticalAlignment.Center;
-            }
-            else
-            {
-                VideoView.HorizontalAlignment = HorizontalAlignment.Stretch;
-                VideoView.VerticalAlignment = VerticalAlignment.Stretch;
-            }
         }
 
         private void VideoWindow_Loaded(object sender, RoutedEventArgs e)
