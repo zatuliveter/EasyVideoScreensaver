@@ -17,6 +17,7 @@ The screensaver folder must include `libvlc.dll`, the `libvlc` native libraries,
 ## Features
 
 - Video sizing: fit, fill, or center
+- No live preview in the small monitor in Windows Screen Saver settings (use the **Preview** button for full-screen test)
 - Control audio volume or mute audio
 - HDR to SDR tone mapping (vivid colors on standard monitors, similar to VLC)
 
@@ -61,6 +62,7 @@ Video playback uses LibVLC (LGPL v2.1). See the [LibVLCSharp](https://github.com
 
 ### Unreleased
 - Replaced WPF MediaElement with LibVLC for HDR to SDR tone mapping and broader format support
+- Disabled embedded mini-preview in Screen Saver settings for faster dialog performance
 
 ### 1.2
 - Added setting to resume video from previous position

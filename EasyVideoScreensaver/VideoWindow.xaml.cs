@@ -25,13 +25,6 @@ namespace EasyVideoScreensaver
             Loaded += VideoWindow_Loaded;
         }
 
-        public UIElement Display => VideoView;
-
-        public void EnsurePlaybackStarted()
-        {
-            TryStartPlayback();
-        }
-
         private void VideoWindow_Loaded(object sender, RoutedEventArgs e)
         {
             TryStartPlayback();
