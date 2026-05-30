@@ -14,10 +14,11 @@ namespace EasyVideoScreensaver
                 return;
 
             Core.Initialize();
+            // Do not force --vout=direct3d11: LibVLCSharp.WPF embeds video via HWND and needs the default vout (direct3d9).
             libVlc = new LibVLC(
-                "--vout=direct3d11",
                 "--tone-mapping=3",
-                "--tone-mapping-desat=0.2");
+                "--tone-mapping-desat=0.2",
+                "--no-video-title-show");
             initialized = true;
         }
 
@@ -41,10 +42,6 @@ namespace EasyVideoScreensaver
                 }));
             };
 
-            if (settings.Resume && settings.ResumePosition > 0)
-                player.Time = (long)(settings.ResumePosition * 1000);
-
-            player.Play();
             return player;
         }
 

@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using LibVLCSharp.Shared;
 
 namespace EasyVideoScreensaver
@@ -9,17 +11,23 @@ namespace EasyVideoScreensaver
         private readonly MySettings settings = ((App)Application.Current).settings;
         private readonly string settingsFilename = ((App)Application.Current).settingsFilename;
         private readonly MediaPlayer mediaPlayer;
+        private bool playbackStarted;
 
         public VideoWindow(MediaPlayer player)
         {
             InitializeComponent();
             mediaPlayer = player;
-            VideoView.MediaPlayer = player;
             ApplyVideoViewLayout();
+            VideoView.MediaPlayer = mediaPlayer;
             Loaded += VideoWindow_Loaded;
         }
 
         public UIElement Display => VideoView;
+
+        public void EnsurePlaybackStarted()
+        {
+            TryStartPlayback();
+        }
 
         private void ApplyVideoViewLayout()
         {
@@ -37,6 +45,28 @@ namespace EasyVideoScreensaver
 
         private void VideoWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            TryStartPlayback();
+        }
+
+        private void TryStartPlayback()
+        {
+            if (playbackStarted)
+                return;
+
+            if (!VideoView.IsLoaded)
+            {
+                Dispatcher.BeginInvoke(new Action(TryStartPlayback), DispatcherPriority.Loaded);
+                return;
+            }
+
+            playbackStarted = true;
+
+            if (settings.Resume && settings.ResumePosition > 0)
+                mediaPlayer.Time = (long)(settings.ResumePosition * 1000);
+
+            if (!mediaPlayer.IsPlaying)
+                mediaPlayer.Play();
+
             UpdateStretch();
         }
 

@@ -111,6 +111,7 @@ namespace EasyVideoScreensaver
             previewHwndSource = new HwndSource(sourceParams);
             previewHwndSource.Disposed += previewHwndSource_Disposed;
             previewHwndSource.RootVisual = mainWindow.Display;
+            mainWindow.EnsurePlaybackStarted();
         }
 
         private void ShowSettings()
