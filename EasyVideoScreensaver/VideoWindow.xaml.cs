@@ -12,6 +12,10 @@ namespace EasyVideoScreensaver
         private readonly string settingsFilename = ((App)Application.Current).settingsFilename;
         private readonly MediaPlayer mediaPlayer;
         private bool playbackStarted;
+        private DispatcherTimer inputTimer;
+        private NativeMethods.POINT initialCursorPos;
+        private bool wasMouseDown;
+        private const int MouseMoveThreshold = 5;
 
         public VideoWindow(MediaPlayer player)
         {
@@ -46,6 +50,7 @@ namespace EasyVideoScreensaver
         private void VideoWindow_Loaded(object sender, RoutedEventArgs e)
         {
             TryStartPlayback();
+            StartInputMonitoring();
         }
 
         private void TryStartPlayback()
@@ -93,14 +98,45 @@ namespace EasyVideoScreensaver
             CloseScreensaver();
         }
 
-        private void Window_MouseDown(object sender, MouseEventArgs e)
+        private void StartInputMonitoring()
         {
-            e.Handled = true;
-            CloseScreensaver();
+            NativeMethods.GetCursorPos(out initialCursorPos);
+            wasMouseDown = IsAnyMouseButtonDown();
+
+            inputTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            inputTimer.Tick += InputTimer_Tick;
+            inputTimer.Start();
+        }
+
+        private void InputTimer_Tick(object sender, EventArgs e)
+        {
+            NativeMethods.GetCursorPos(out NativeMethods.POINT currentPos);
+            int dx = currentPos.X - initialCursorPos.X;
+            int dy = currentPos.Y - initialCursorPos.Y;
+            if (dx * dx + dy * dy > MouseMoveThreshold * MouseMoveThreshold)
+            {
+                CloseScreensaver();
+                return;
+            }
+
+            bool isMouseDown = IsAnyMouseButtonDown();
+            if (!wasMouseDown && isMouseDown)
+                CloseScreensaver();
+
+            wasMouseDown = isMouseDown;
+        }
+
+        private static bool IsAnyMouseButtonDown()
+        {
+            return (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LBUTTON) & 0x8000) != 0
+                || (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RBUTTON) & 0x8000) != 0
+                || (NativeMethods.GetAsyncKeyState(NativeMethods.VK_MBUTTON) & 0x8000) != 0;
         }
 
         private void CloseScreensaver()
         {
+            inputTimer?.Stop();
+
             if (settings.Resume)
             {
                 settings.ResumePosition = VlcPlayback.GetPositionSeconds(mediaPlayer);

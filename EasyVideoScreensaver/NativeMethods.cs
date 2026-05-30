@@ -17,6 +17,16 @@ namespace EasyVideoScreensaver
         [DllImport("Shcore.dll")]
         public static extern IntPtr GetDpiForMonitor([In]IntPtr hmonitor, [In]DpiType dpiType, [Out]out uint dpiX, [Out]out uint dpiY);
 
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
+
+        public const int VK_LBUTTON = 0x01;
+        public const int VK_RBUTTON = 0x02;
+        public const int VK_MBUTTON = 0x04;
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
         public class MonitorInfoEx
         {
@@ -37,6 +47,13 @@ namespace EasyVideoScreensaver
             Effective = 0,
             Angular = 1,
             Raw = 2,
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
         }
 
         [StructLayout(LayoutKind.Sequential)]
