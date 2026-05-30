@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using LibVLCSharp.Shared;
 
 namespace EasyVideoScreensaver
@@ -28,8 +29,9 @@ namespace EasyVideoScreensaver
         {
             EnsureInitialized();
 
-            var media = new Media(libVlc, settings.VideoFilename, FromType.FromPath);
+            var media = CreateMedia(settings);
             var player = new MediaPlayer(media);
+            var videoPath = settings.VideoFilename;
 
             ApplyStretch(player, settings.StretchMode);
             player.Volume = settings.Mute ? 0 : (int)(settings.Volume * 100);
@@ -40,11 +42,28 @@ namespace EasyVideoScreensaver
                 System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     player.Stop();
+                    var loopMedia = new Media(libVlc, videoPath, FromType.FromPath);
+                    player.Media = loopMedia;
+                    loopMedia.Dispose();
                     player.Play();
                 }));
             };
 
             return player;
+        }
+
+        private static Media CreateMedia(MySettings settings)
+        {
+            var media = new Media(libVlc, settings.VideoFilename, FromType.FromPath);
+            if (settings.Resume && settings.ResumePosition > 0)
+            {
+                media.AddOption(string.Format(
+                    CultureInfo.InvariantCulture,
+                    ":start-time={0}",
+                    settings.ResumePosition));
+            }
+
+            return media;
         }
 
         public static void ApplyStretch(MediaPlayer player, string stretchMode)

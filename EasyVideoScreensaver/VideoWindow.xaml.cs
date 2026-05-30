@@ -51,9 +51,6 @@ namespace EasyVideoScreensaver
 
             playbackStarted = true;
 
-            if (settings.Resume && settings.ResumePosition > 0)
-                mediaPlayer.Time = (long)(settings.ResumePosition * 1000);
-
             if (!mediaPlayer.IsPlaying)
                 mediaPlayer.Play();
 
