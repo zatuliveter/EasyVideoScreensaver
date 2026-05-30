@@ -14,8 +14,10 @@ namespace EasyVideoScreensaver
                 return;
 
             Core.Initialize();
-            // Do not force --vout=direct3d11: LibVLCSharp.WPF embeds video via HWND and needs the default vout (direct3d9).
+            // direct3d11 has proper HDR tone mapping (same as updated VLC). Safe now that playback
+            // starts only after VideoView is loaded — otherwise LibVLC opens a separate D3D11 window.
             libVlc = new LibVLC(
+                "--vout=direct3d11",
                 "--tone-mapping=3",
                 "--tone-mapping-desat=0.2",
                 "--no-video-title-show");
